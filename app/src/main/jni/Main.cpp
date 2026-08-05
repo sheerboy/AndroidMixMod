@@ -264,7 +264,17 @@ TAG_PREMIUM EntityBase_GetPremiumType(EntityBase_o *_this) {
 }
 
 void Entity_LoadCard(Entity_o *_this, System_String_o *cardId, Entity_LoadCardData_o *data, bool async) {
-    *reinterpret_cast<int *>(_this->fields.m_realTimePremium + sizeof(Il2CppObject)) = static_cast<int>(EntityBase_GetPremiumType(reinterpret_cast<EntityBase_o *>(_this)));
+    if (_this != NULL) {
+        auto premium = static_cast<int>(EntityBase_GetPremiumType(reinterpret_cast<EntityBase_o *>(_this)));
+        // Entity.m_realTimePremium is an inline TAG_PREMIUM value field
+        // (arm64: 0xC8, armv7: 0x8C). The generated header mis-types it as a
+        // pointer, so write directly at its real offset to avoid a wild write.
+#ifdef __aarch64__
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(_this) + 0xC8) = premium;
+#else
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(_this) + 0x8C) = premium;
+#endif
+    }
     il2cpp::Entity_LoadCard(_this, cardId, data, async);
 }
 
@@ -280,7 +290,7 @@ void UpdateCurrentOpponent() {
         return;
     }
     auto opposingSidePlayer = il2cpp::GameState_GetOpposingSidePlayer(gameState);
-    if (opposingSidePlayer == NULL) {
+    if (opposingSidePlayer == NULL || opposingSidePlayer->fields.m_gameAccountId == NULL) {
         return;
     }
     auto currentOpponent = il2cpp::BnetPresenceMgr_GetPlayer(il2cpp::BnetPresenceMgr_Get(), opposingSidePlayer->fields.m_gameAccountId);
@@ -297,32 +307,42 @@ void UpdateCurrentOpponent(int opponentPlayerId) {
         currentOpponent_gchandle = -1;
     }
     auto gameState = il2cpp::GameState_Get();
+    if (gameState == NULL) {
+        return;
+    }
     auto playerInfoMap = reinterpret_cast<Blizzard_T5_Core_Map_TKey__TValue__o *>(il2cpp::GameState_GetPlayerInfoMap(gameState));
-    if (gameState == NULL || !il2cpp::Blizzard_T5_Core_Map_int_object_ContainsKey(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_ContainsKey)) {
+    if (playerInfoMap == NULL || !il2cpp::Blizzard_T5_Core_Map_int_object_ContainsKey(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_ContainsKey)) {
         return;
     }
-    auto id = reinterpret_cast<SharedPlayerInfo_o *>(il2cpp::Blizzard_T5_Core_Map_int_object_get_Item(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_get_Item))->fields.m_gameAccountId;
-    if (id == NULL) {
+    auto playerInfo = reinterpret_cast<SharedPlayerInfo_o *>(il2cpp::Blizzard_T5_Core_Map_int_object_get_Item(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_get_Item));
+    if (playerInfo == NULL || playerInfo->fields.m_gameAccountId == NULL) {
         return;
     }
-    auto currentOpponent = il2cpp::BnetPresenceMgr_GetPlayer(il2cpp::BnetPresenceMgr_Get(), id);
+    auto currentOpponent = il2cpp::BnetPresenceMgr_GetPlayer(il2cpp::BnetPresenceMgr_Get(), playerInfo->fields.m_gameAccountId);
     if (currentOpponent) {
         currentOpponent_gchandle = il2cpp::il2cpp_gchandle_new(currentOpponent, false);
     }
 }
 
 BnetPlayer_o *GetSelectedOpponent(PlayerLeaderboardCard_o *_this) {
-    auto opponentPlayerId = il2cpp::EntityBase_GetTag(reinterpret_cast<EntityBase_o *>(_this->fields.m_playerHeroEntity), 30);
+    auto playerHeroEntity = _this->fields.m_playerHeroEntity;
+    if (playerHeroEntity == NULL) {
+        return NULL;
+    }
+    auto opponentPlayerId = il2cpp::EntityBase_GetTag(reinterpret_cast<EntityBase_o *>(playerHeroEntity), 30);
     auto gameState = il2cpp::GameState_Get();
+    if (gameState == NULL) {
+        return NULL;
+    }
     auto playerInfoMap = reinterpret_cast<Blizzard_T5_Core_Map_TKey__TValue__o *>(il2cpp::GameState_GetPlayerInfoMap(gameState));
-    if (gameState == NULL || !il2cpp::Blizzard_T5_Core_Map_int_object_ContainsKey(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_ContainsKey)) {
+    if (playerInfoMap == NULL || !il2cpp::Blizzard_T5_Core_Map_int_object_ContainsKey(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_ContainsKey)) {
         return NULL;
     }
-    auto id = reinterpret_cast<SharedPlayerInfo_o *>(il2cpp::Blizzard_T5_Core_Map_int_object_get_Item(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_get_Item))->fields.m_gameAccountId;
-    if (id == NULL) {
+    auto playerInfo = reinterpret_cast<SharedPlayerInfo_o *>(il2cpp::Blizzard_T5_Core_Map_int_object_get_Item(playerInfoMap, opponentPlayerId, *il2cpp::Method_Blizzard_T5_Core_Map_int_SharedPlayerInfo_get_Item));
+    if (playerInfo == NULL || playerInfo->fields.m_gameAccountId == NULL) {
         return NULL;
     }
-    return il2cpp::BnetPresenceMgr_GetPlayer(il2cpp::BnetPresenceMgr_Get(), id);
+    return il2cpp::BnetPresenceMgr_GetPlayer(il2cpp::BnetPresenceMgr_Get(), playerInfo->fields.m_gameAccountId);
 }
 
 void Gameplay_OnCreateGame(Gameplay_o *_this, int phase, Il2CppObject *userData) {
@@ -602,6 +622,10 @@ void Localization_SetPegLocaleName(Localization_o *_this, System_String_o *local
 }
 
 void copyBattleTag() {
+    if (currentOpponent_gchandle == -1) {
+        return;
+    }
+
     auto currentOpponent = (BnetPlayer_o *)il2cpp::il2cpp_gchandle_get_target(currentOpponent_gchandle);
 
     if (currentOpponent != NULL) {
