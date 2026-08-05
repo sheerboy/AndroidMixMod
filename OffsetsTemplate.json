@@ -627,5 +627,35 @@
     "Section": 0,
     "Text": "#define Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId_Offset \"0x{0:X}\"",
     "Name": "Hearthstone.Devices.DeviceLocaleHelper$$GetCurrentRegionId"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RegionUtils_get_CurrentRegion_Offset \"0x{0:X}\"",
+    "Name": "Hearthstone.Util.RegionUtils$$get_CurrentRegion"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RegionUtils_set_CurrentRegion_Offset \"0x{0:X}\"",
+    "Name": "Hearthstone.Util.RegionUtils$$set_CurrentRegion"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RegionUtils_get_LaunchRegion_Offset \"0x{0:X}\"",
+    "Name": "Hearthstone.Util.RegionUtils$$get_LaunchRegion"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RegionUtils_get_IsCNLegalRegion_Offset \"0x{0:X}\"",
+    "Name": "Hearthstone.Util.RegionUtils$$get_IsCNLegalRegion"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RegionUtils_ConvertBNetRegionToGlobalRegion_Offset \"0x{0:X}\"",
+    "Name": "Hearthstone.Util.RegionUtils$$ConvertBNetRegionToGlobalRegion"
   }
 ]

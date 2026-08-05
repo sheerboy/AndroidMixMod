@@ -192,6 +192,47 @@ BnetRegion Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId() {
     return il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId();
 }
 
+int RegionUtils_get_CurrentRegion() {
+    if (redirectToCNServer) {
+        return static_cast<int>(BnetRegion::REGION_CN);
+    }
+
+    return il2cpp::RegionUtils_ConvertBNetRegionToGlobalRegion(
+        static_cast<int>(il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId()));
+}
+
+void RegionUtils_set_CurrentRegion(int region) {
+    if (redirectToCNServer) {
+        region = static_cast<int>(BnetRegion::REGION_CN);
+    }
+
+    il2cpp::RegionUtils_set_CurrentRegion(region);
+}
+
+int RegionUtils_get_LaunchRegion() {
+    if (redirectToCNServer) {
+        return static_cast<int>(BnetRegion::REGION_CN);
+    }
+
+    return static_cast<int>(il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId());
+}
+
+bool RegionUtils_get_IsCNLegalRegion() {
+    if (redirectToCNServer) {
+        return true;
+    }
+
+    return il2cpp::RegionUtils_get_IsCNLegalRegion();
+}
+
+int RegionUtils_ConvertBNetRegionToGlobalRegion(int bnetRegion) {
+    if (redirectToCNServer) {
+        return static_cast<int>(BnetRegion::REGION_CN);
+    }
+
+    return il2cpp::RegionUtils_ConvertBNetRegionToGlobalRegion(bnetRegion);
+}
+
 void SocialToastMgr_AddToast(SocialToastMgr_o *_this, Il2CppObject *blocker, System_String_o *textArg, Il2CppObject *toastType, float displayTime, bool playSound) {
     displayTime *= timeScale;
     il2cpp::SocialToastMgr_AddToast(_this, blocker, textArg, toastType, displayTime, playSound);
@@ -966,6 +1007,12 @@ void hack_thread() {
     HOOK(targetLibName, ThinkEmoteManager_Update_Offset, ThinkEmoteManager_Update, il2cpp::ThinkEmoteManager_Update);
     
     HOOK(targetLibName, Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId_Offset, Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId, il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId);
+
+    HOOK(targetLibName, RegionUtils_get_CurrentRegion_Offset, RegionUtils_get_CurrentRegion, il2cpp::RegionUtils_get_CurrentRegion);
+    HOOK(targetLibName, RegionUtils_set_CurrentRegion_Offset, RegionUtils_set_CurrentRegion, il2cpp::RegionUtils_set_CurrentRegion);
+    HOOK(targetLibName, RegionUtils_get_LaunchRegion_Offset, RegionUtils_get_LaunchRegion, il2cpp::RegionUtils_get_LaunchRegion);
+    HOOK(targetLibName, RegionUtils_get_IsCNLegalRegion_Offset, RegionUtils_get_IsCNLegalRegion, il2cpp::RegionUtils_get_IsCNLegalRegion);
+    HOOK(targetLibName, RegionUtils_ConvertBNetRegionToGlobalRegion_Offset, RegionUtils_ConvertBNetRegionToGlobalRegion, il2cpp::RegionUtils_ConvertBNetRegionToGlobalRegion);
     
     LOGI(OBFUSCATE("Done"));
 }

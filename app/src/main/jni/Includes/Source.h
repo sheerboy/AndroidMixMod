@@ -232,6 +232,16 @@ namespace il2cpp {
     void (*Localization_SetPegLocaleName)(Localization_o *_this, System_String_o *localeName);
     
     BnetRegion (*Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId)();
+
+    int (*RegionUtils_get_CurrentRegion)();
+
+    void (*RegionUtils_set_CurrentRegion)(int region);
+
+    int (*RegionUtils_get_LaunchRegion)();
+
+    bool (*RegionUtils_get_IsCNLegalRegion)();
+
+    int (*RegionUtils_ConvertBNetRegionToGlobalRegion)(int bnetRegion);
 };
 
 std::wstring_convert<std::codecvt_utf8_utf16<Il2CppChar>, Il2CppChar> utf16conv;
