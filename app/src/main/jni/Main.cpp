@@ -303,8 +303,7 @@ int RegionUtils_get_CurrentRegion() {
         return static_cast<int>(BnetRegion::REGION_CN);
     }
 
-    return il2cpp::RegionUtils_ConvertBNetRegionToGlobalRegion(
-        static_cast<int>(il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId()));
+    return il2cpp::RegionUtils_get_CurrentRegion();
 }
 
 void RegionUtils_set_CurrentRegion(int region) {
@@ -320,7 +319,7 @@ int RegionUtils_get_LaunchRegion() {
         return static_cast<int>(BnetRegion::REGION_CN);
     }
 
-    return static_cast<int>(il2cpp::Hearthstone_Devices_DeviceLocaleHelper_GetCurrentRegionId());
+    return il2cpp::RegionUtils_get_LaunchRegion();
 }
 
 bool RegionUtils_get_IsCNLegalRegion() {
