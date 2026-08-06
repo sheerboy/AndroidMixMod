@@ -663,7 +663,7 @@ void Localization_SetPegLocaleName(Localization_o *_this, System_String_o *local
 }
 
 void copyBattleTag() {
-    if (currentOpponent_gchandle == -1) {
+    if (currentOpponent_gchandle == nullptr) {
         return;
     }
 
