@@ -28,6 +28,10 @@ locale_map zhCN = localization["zhCN"] = std::unordered_map<int, const char*>{
     { COPY_BATTLETAG, "22_Button_复制战斗标签" },
     { COPY_BATTLETAG_ON_BATTLEGROUNDS, "23_Toggle_在战场上复制 BattleTag" },
     { SIMULATE_DISCONNECT, "24_Button_模拟关机" },
+    { BOARD_ZOOM, "12_Toggle_缩放棋盘相机" },
+    { BOARD_ZOOM_VALUE, "13_SeekBar_相机视野_60_120" },
+    { TURN_TIMER, "14_Toggle_结束回合按钮上显示回合倒计时" },
+    { LEADERBOARD_INFO, "15_Toggle_战场排行榜显示MMR和上一场棋盘" },
     { SAVE_SETTINGS, "-1_Toggle_保存功能首选项" },
     { AUTO_SIZE, "-3_Toggle_自动调整垂直大小" },
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>关闭设置</font>" }

@@ -28,6 +28,10 @@ locale_map ruRU = localization["ruRU"] = std::unordered_map<int, const char*>{
     { COPY_BATTLETAG, "22_Button_Скопировать BattleTag" },
     { COPY_BATTLETAG_ON_BATTLEGROUNDS, "23_Toggle_Копировать BattleTag на полях сражений" },
     { SIMULATE_DISCONNECT, "24_Button_Симулировать отключение" },
+    { BOARD_ZOOM, "12_Toggle_Приближение доски" },
+    { BOARD_ZOOM_VALUE, "13_SeekBar_Угол обзора камеры_60_120" },
+    { TURN_TIMER, "14_Toggle_Таймер хода на кнопке завершения хода" },
+    { LEADERBOARD_INFO, "15_Toggle_MMR и последний стол на лидерборде полей сражений" },
     { SAVE_SETTINGS, "-1_Toggle_Сохранять настройки" },
     { AUTO_SIZE, "-3_Toggle_Авторазмер по вертикали" },
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>Закрыть настройки</font>" }

@@ -186,6 +186,84 @@
     "Name": "EntityBase$$GetTag"
   },
   {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define BoardCameras_Get_Offset \"0x{0:X}\"",
+    "Name": "BoardCameras$$Get"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define BoardCameras_GetCamera_Offset \"0x{0:X}\"",
+    "Name": "BoardCameras$$GetCamera"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Camera_get_fieldOfView_Offset \"0x{0:X}\"",
+    "Name": "UnityEngine.Camera$$get_fieldOfView"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Camera_set_fieldOfView_Offset \"0x{0:X}\"",
+    "Name": "UnityEngine.Camera$$set_fieldOfView"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define TurnTimer_Get_Offset \"0x{0:X}\"",
+    "Name": "TurnTimer$$Get"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define TurnTimer_Update_Offset \"0x{0:X}\"",
+    "Name": "TurnTimer$$Update"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define EndTurnButton_Get_Offset \"0x{0:X}\"",
+    "Name": "EndTurnButton$$Get"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define UberText_SetText_Offset \"0x{0:X}\"",
+    "Name": "UberText$$SetText"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Entity_GetName_Offset \"0x{0:X}\"",
+    "Name": "Entity$$GetName"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define PartyManager_Get_Offset \"0x{0:X}\"",
+    "Name": "PartyManager$$Get"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define PartyManager_GetBattlegroundsPartyMemberRating_Offset \"0x{0:X}\"",
+    "Name": "PartyManager$$GetBattlegroundsPartyMemberRating"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RankMgr_Get_Offset \"0x{0:X}\"",
+    "Name": "RankMgr$$Get"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define RankMgr_GetBattlegroundsMedalFromRankPresenceField_Offset \"0x{0:X}\"",
+    "Name": "RankMgr$$GetBattlegroundsMedalFromRankPresenceField"
+  },
+  {
     "$type": "Generator.OffsetLines.SignatureLine, Generator",
     "Section": 0,
     "Text": "#define SocialToastMgr_AddToast_Offset \"0x{0:X}\"",

@@ -242,6 +242,32 @@ namespace il2cpp {
     bool (*RegionUtils_get_IsCNLegalRegion)();
 
     int (*RegionUtils_ConvertBNetRegionToGlobalRegion)(int bnetRegion);
+
+    BoardCameras_o *(*BoardCameras_Get)();
+
+    UnityEngine_Camera_o *(*BoardCameras_GetCamera)(BoardCameras_o *_this);
+
+    float (*Camera_get_fieldOfView)(UnityEngine_Camera_o *_this);
+
+    void (*Camera_set_fieldOfView)(UnityEngine_Camera_o *_this, float value);
+
+    TurnTimer_o *(*TurnTimer_Get)();
+
+    void (*TurnTimer_Update)(TurnTimer_o *_this);
+
+    EndTurnButton_o *(*EndTurnButton_Get)();
+
+    void (*UberText_SetText)(UberText_o *_this, System_String_o *text);
+
+    System_String_o *(*Entity_GetName)(Entity_o *_this);
+
+    PartyManager_o *(*PartyManager_Get)();
+
+    int (*PartyManager_GetBattlegroundsPartyMemberRating)(PartyManager_o *_this, Blizzard_GameService_SDK_Client_Integration_BnetGameAccountId_o *playerGameAccountId);
+
+    RankMgr_o *(*RankMgr_Get)();
+
+    bool (*RankMgr_GetBattlegroundsMedalFromRankPresenceField)(RankMgr_o *_this, BnetGameAccount_o *gameAccount, int *bgRating, int *gameType);
 };
 
 std::wstring_convert<std::codecvt_utf8_utf16<Il2CppChar>, Il2CppChar> utf16conv;

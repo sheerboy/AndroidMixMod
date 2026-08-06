@@ -25,6 +25,10 @@
 #define COPY_BATTLETAG 22
 #define COPY_BATTLETAG_ON_BATTLEGROUNDS 23
 #define SIMULATE_DISCONNECT 24
+#define BOARD_ZOOM 12
+#define BOARD_ZOOM_VALUE 13
+#define TURN_TIMER 14
+#define LEADERBOARD_INFO 15
 #define SAVE_SETTINGS 28
 #define AUTO_SIZE 29
 #define CLOSE_SETTINGS 30
@@ -60,6 +64,10 @@ locale_map enUS = localization["enUS"] = std::unordered_map<int, const char*>{
     { COPY_BATTLETAG, "22_Button_Copy BattleTag" },
     { COPY_BATTLETAG_ON_BATTLEGROUNDS, "23_Toggle_Copy BattleTag on Battlegrounds" },
     { SIMULATE_DISCONNECT, "24_Button_Simulate disconnect" },
+    { BOARD_ZOOM, "12_Toggle_Zoom board camera" },
+    { BOARD_ZOOM_VALUE, "13_SeekBar_Camera field of view_60_120" },
+    { TURN_TIMER, "14_Toggle_Show turn countdown on end turn button" },
+    { LEADERBOARD_INFO, "15_Toggle_Show MMR and last board on Battlegrounds leaderboard" },
     { SAVE_SETTINGS, "-1_Toggle_Save feature preferences"},
     { AUTO_SIZE, "-3_Toggle_Auto size vertically"},
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>Close settings</font>"}
