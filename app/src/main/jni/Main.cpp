@@ -1259,10 +1259,6 @@ void hack_thread() {
     HOOK(targetLibName, RegionUtils_get_CurrentRegion_Offset, RegionUtils_get_CurrentRegion, il2cpp::RegionUtils_get_CurrentRegion);
     HOOK(targetLibName, RegionUtils_set_CurrentRegion_Offset, RegionUtils_set_CurrentRegion, il2cpp::RegionUtils_set_CurrentRegion);
 
-#ifdef __aarch64__
-    HOOK(targetLibName, BoardCameras_GetCamera_Offset, BoardCameras_GetCamera, il2cpp::BoardCameras_GetCamera);
-    HOOK(targetLibName, TurnTimer_Update_Offset, TurnTimer_Update, il2cpp::TurnTimer_Update);
-#endif
 
     LOGI(OBFUSCATE("Done"));
 }
