@@ -204,6 +204,20 @@ jobs:
       - name: Build with Gradle
         run: gradle assembleRelease
 
+      - name: Extract libMixMod.so from apk
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p artifact/arm64-v8a artifact/armeabi-v7a
+          unzip -o -j app/build/outputs/apk/release/app-release-unsigned.apk "lib/arm64-v8a/libMixMod.so" -d artifact/arm64-v8a
+          unzip -o -j app/build/outputs/apk/release/app-release-unsigned.apk "lib/armeabi-v7a/libMixMod.so" -d artifact/armeabi-v7a
+
+      - name: Upload libMixMod.so artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libMixMod
+          path: artifact/
+          if-no-files-found: error
+
       - name: Decompile apk
         working-directory: ${{ env.Downloads_Dir }}
         run: java -jar apktool.jar d ${{ github.workspace }}/app/build/outputs/apk/release/app-release-unsigned.apk -o MixMod
