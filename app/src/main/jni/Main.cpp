@@ -1262,17 +1262,6 @@ void hack_thread() {
 #ifdef __aarch64__
     HOOK(targetLibName, BoardCameras_GetCamera_Offset, BoardCameras_GetCamera, il2cpp::BoardCameras_GetCamera);
     HOOK(targetLibName, TurnTimer_Update_Offset, TurnTimer_Update, il2cpp::TurnTimer_Update);
-
-    void *zoomThread = il2cpp::il2cpp_thread_attach(il2cpp::il2cpp_domain_get());
-    while (true) {
-        if (boardZoomEnabled) {
-            ApplyBoardZoom();
-        } else if (m_boardCurrentFOV >= 0.0f) {
-            ResetBoardZoom();
-        }
-        usleep(30000);
-    }
-    il2cpp::il2cpp_thread_detach(zoomThread);
 #endif
 
     LOGI(OBFUSCATE("Done"));
