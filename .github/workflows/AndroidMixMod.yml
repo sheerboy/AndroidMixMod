@@ -245,3 +245,5 @@ jobs:
           tag: "${{ env.apk_version }}"
           name: "AndroidMixMod"
           artifacts: "${{ github.workspace }}/Release/signed/${{ env.mixmod_apk_name }}"
+          allowUpdates: true
+          replacesArtifacts: true
