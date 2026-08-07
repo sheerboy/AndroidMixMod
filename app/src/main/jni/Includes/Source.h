@@ -171,6 +171,12 @@ namespace il2cpp {
 
     Player_o *(*GameState_GetPlayer)(GameState_o *_this, int id);
 
+    ZonePlay_o *(*Player_GetBattlefieldZone)(Player_o *_this);
+
+    System_Collections_Generic_List_Card__o *(*Zone_GetCards)(Zone_o *_this);
+
+    Entity_o *(*Card_GetEntity)(Card_o *_this);
+
     bool (*Player_IsFriendlySide)(Player_o *_this);
 
     bool (*System_String_IsNullOrEmpty)(System_String_o *value);

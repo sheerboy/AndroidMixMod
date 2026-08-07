@@ -59,8 +59,6 @@ std::atomic<bool> turnTimerEnabled{ false };
 std::atomic<bool> leaderboardInfoEnabled{ false };
 float m_boardCurrentFOV = -1.0f;
 int m_lastTimerSecond = -1;
-void *boardCamera_gchandle = nullptr;
-std::mutex boardCameraMutex;
 #endif
 
 
@@ -81,23 +79,12 @@ void * currentOpponent_gchandle = nullptr;
 // To learn HTML, go to this page: https://www.w3schools.com/
 
 #ifdef __aarch64__
-UnityEngine_Camera_o *BoardCameras_GetCamera(BoardCameras_o *_this) {
-    auto camera = il2cpp::BoardCameras_GetCamera(_this);
-    if (camera != NULL) {
-        std::lock_guard<std::mutex> lock(boardCameraMutex);
-        if (boardCamera_gchandle == nullptr) {
-            boardCamera_gchandle = il2cpp::il2cpp_gchandle_new(camera, false);
-        }
-    }
-    return camera;
-}
-
 void ApplyBoardZoom() {
-    std::lock_guard<std::mutex> lock(boardCameraMutex);
-    if (boardCamera_gchandle == nullptr) {
+    auto boardCameras = il2cpp::BoardCameras_Get();
+    if (boardCameras == NULL) {
         return;
     }
-    auto camera = (UnityEngine_Camera_o *)il2cpp::il2cpp_gchandle_get_target(boardCamera_gchandle);
+    auto camera = il2cpp::BoardCameras_GetCamera(boardCameras);
     if (camera == NULL) {
         return;
     }
@@ -113,13 +100,13 @@ void ApplyBoardZoom() {
 }
 
 void ResetBoardZoom() {
-    std::lock_guard<std::mutex> lock(boardCameraMutex);
-    if (boardCamera_gchandle == nullptr) {
+    auto boardCameras = il2cpp::BoardCameras_Get();
+    if (boardCameras == NULL) {
+        m_boardCurrentFOV = -1.0f;
         return;
     }
-    auto camera = (UnityEngine_Camera_o *)il2cpp::il2cpp_gchandle_get_target(boardCamera_gchandle);
-    auto boardCameras = il2cpp::BoardCameras_Get();
-    if (camera != NULL && boardCameras != NULL) {
+    auto camera = il2cpp::BoardCameras_GetCamera(boardCameras);
+    if (camera != NULL) {
         float def = *reinterpret_cast<float *>(reinterpret_cast<char *>(boardCameras) + 0x28);
         il2cpp::Camera_set_fieldOfView(camera, def);
     }
@@ -495,48 +482,36 @@ System_String_o *GetOpponentRating(BnetPlayer_o *currentOpponent) {
 }
 
 System_String_o *BuildOpponentBoardInfo(PlayerLeaderboardCard_o *_this) {
-    auto overlay = *reinterpret_cast<void **>(reinterpret_cast<char *>(_this) + 0x70);
-    if (overlay == NULL) {
+    auto hero = _this->fields.m_playerHeroEntity;
+    if (hero == NULL) {
         return NULL;
     }
-    auto panel = *reinterpret_cast<void **>(reinterpret_cast<char *>(overlay) + 0x98);
-    if (panel == NULL) {
+    int playerId = il2cpp::EntityBase_GetTag(reinterpret_cast<EntityBase_o *>(hero), 30);
+    if (playerId == 0) {
         return NULL;
     }
-    auto queue = *reinterpret_cast<void **>(reinterpret_cast<char *>(panel) + 0x40);
-    if (queue == NULL) {
+    auto gameState = il2cpp::GameState_Get();
+    if (gameState == NULL) {
         return NULL;
     }
-    auto list = *reinterpret_cast<void **>(reinterpret_cast<char *>(queue) + 0x10);
-    if (list == NULL) {
+    auto player = il2cpp::GameState_GetPlayer(gameState, playerId);
+    if (player == NULL) {
         return NULL;
     }
-    int size = *reinterpret_cast<int *>(reinterpret_cast<char *>(list) + 0x18);
-    if (size <= 0) {
+    auto zone = il2cpp::Player_GetBattlefieldZone(player);
+    if (zone == NULL) {
         return NULL;
     }
-    auto items = *reinterpret_cast<void **>(reinterpret_cast<char *>(list) + 0x10);
-    if (items == NULL) {
+    auto cards = il2cpp::Zone_GetCards(reinterpret_cast<Zone_o *>(zone));
+    if (cards == NULL) {
         return NULL;
     }
-    auto entry = *reinterpret_cast<void **>(reinterpret_cast<char *>(items) + 0x20 + (size - 1) * sizeof(void *));
-    if (entry == NULL) {
-        return NULL;
-    }
-    auto team = *reinterpret_cast<void **>(reinterpret_cast<char *>(entry) + 0x20);
-    if (team == NULL) {
-        return NULL;
-    }
-    auto players = *reinterpret_cast<void **>(reinterpret_cast<char *>(team) + 0x10);
-    if (players == NULL) {
-        return NULL;
-    }
-    int count = *reinterpret_cast<int *>(reinterpret_cast<char *>(players) + 0x18);
+    int count = *reinterpret_cast<int *>(reinterpret_cast<char *>(cards) + 0x18);
     if (count <= 0) {
         return NULL;
     }
-    auto playerItems = *reinterpret_cast<void **>(reinterpret_cast<char *>(players) + 0x10);
-    if (playerItems == NULL) {
+    auto items = *reinterpret_cast<void **>(reinterpret_cast<char *>(cards) + 0x10);
+    if (items == NULL) {
         return NULL;
     }
 
@@ -544,15 +519,11 @@ System_String_o *BuildOpponentBoardInfo(PlayerLeaderboardCard_o *_this) {
     il2cpp::System_Text_StringBuilder_ctor(sb);
     il2cpp::System_Text_StringBuilder_AppendString(sb, u"Board: "_SS);
     for (int i = 0; i < count; i++) {
-        auto pd = *reinterpret_cast<void **>(reinterpret_cast<char *>(playerItems) + 0x20 + i * sizeof(void *));
-        if (pd == NULL) {
+        auto card = *reinterpret_cast<void **>(reinterpret_cast<char *>(items) + 0x20 + i * sizeof(void *));
+        if (card == NULL) {
             continue;
         }
-        auto actor = *reinterpret_cast<void **>(reinterpret_cast<char *>(pd) + 0x10);
-        if (actor == NULL) {
-            continue;
-        }
-        auto entity = *reinterpret_cast<void **>(reinterpret_cast<char *>(actor) + 0x5a8);
+        auto entity = il2cpp::Card_GetEntity(reinterpret_cast<Card_o *>(card));
         if (entity == NULL) {
             continue;
         }
@@ -905,6 +876,14 @@ void Network_Update(Network_o *_this) {
         copyBattleTagQueued = false;
         copyBattleTag();
     }
+
+#ifdef __aarch64__
+    if (boardZoomEnabled) {
+        ApplyBoardZoom();
+    } else if (m_boardCurrentFOV >= 0.0f) {
+        ResetBoardZoom();
+    }
+#endif
 }
 
 void simulateDisconnect() {
@@ -1176,6 +1155,9 @@ void hack_thread() {
     il2cpp::EntityBase_HasTag = reinterpret_cast<bool (*)(EntityBase_o * _this, int tag)>(getAbsoluteAddress(targetLibName, EntityBase_HasTag_Offset));
     il2cpp::EntityBase_GetControllerId = reinterpret_cast<int (*)(EntityBase_o * _this)>(getAbsoluteAddress(targetLibName, EntityBase_GetControllerId_Offset));
     il2cpp::GameState_GetPlayer = reinterpret_cast<Player_o * (*)(GameState_o *_this, int id)>(getAbsoluteAddress(targetLibName, GameState_GetPlayer_Offset));
+    il2cpp::Player_GetBattlefieldZone = reinterpret_cast<ZonePlay_o * (*)(Player_o *_this)>(getAbsoluteAddress(targetLibName, Player_GetBattlefieldZone_Offset));
+    il2cpp::Zone_GetCards = reinterpret_cast<System_Collections_Generic_List_Card__o * (*)(Zone_o *_this)>(getAbsoluteAddress(targetLibName, Zone_GetCards_Offset));
+    il2cpp::Card_GetEntity = reinterpret_cast<Entity_o * (*)(Card_o *_this)>(getAbsoluteAddress(targetLibName, Card_GetEntity_Offset));
     il2cpp::Player_IsFriendlySide = reinterpret_cast<bool (*)(Player_o *_this)>(getAbsoluteAddress(targetLibName, Player_IsFriendlySide_Offset));
 
     il2cpp::System_String_IsNullOrEmpty = reinterpret_cast<bool (*)(System_String_o * value)>(getAbsoluteAddress(targetLibName, System_String_IsNullOrEmpty_Offset));
@@ -1208,6 +1190,7 @@ void hack_thread() {
 
 #ifdef __aarch64__
     il2cpp::BoardCameras_Get = reinterpret_cast<BoardCameras_o * (*)()>(getAbsoluteAddress(targetLibName, BoardCameras_Get_Offset));
+    il2cpp::BoardCameras_GetCamera = reinterpret_cast<UnityEngine_Camera_o * (*)(BoardCameras_o * _this)>(getAbsoluteAddress(targetLibName, BoardCameras_GetCamera_Offset));
     il2cpp::Camera_get_fieldOfView = reinterpret_cast<float (*)(UnityEngine_Camera_o * _this)>(getAbsoluteAddress(targetLibName, Camera_get_fieldOfView_Offset));
     il2cpp::Camera_set_fieldOfView = reinterpret_cast<void (*)(UnityEngine_Camera_o * _this, float value)>(getAbsoluteAddress(targetLibName, Camera_set_fieldOfView_Offset));
     il2cpp::EndTurnButton_Get = reinterpret_cast<EndTurnButton_o * (*)()>(getAbsoluteAddress(targetLibName, EndTurnButton_Get_Offset));
@@ -1259,6 +1242,9 @@ void hack_thread() {
     HOOK(targetLibName, RegionUtils_get_CurrentRegion_Offset, RegionUtils_get_CurrentRegion, il2cpp::RegionUtils_get_CurrentRegion);
     HOOK(targetLibName, RegionUtils_set_CurrentRegion_Offset, RegionUtils_set_CurrentRegion, il2cpp::RegionUtils_set_CurrentRegion);
 
+#ifdef __aarch64__
+    HOOK(targetLibName, TurnTimer_Update_Offset, TurnTimer_Update, il2cpp::TurnTimer_Update);
+#endif
 
     LOGI(OBFUSCATE("Done"));
 }

@@ -104,6 +104,24 @@
   {
     "$type": "Generator.OffsetLines.TextLine, Generator",
     "Section": 0,
+    "Text": "#define Player_GetBattlefieldZone_Offset \"0x{0:X}\"",
+    "Name": "Player$$GetBattlefieldZone"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Zone_GetCards_Offset \"0x{0:X}\"",
+    "Name": "Zone$$GetCards"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Card_GetEntity_Offset \"0x{0:X}\"",
+    "Name": "Card$$GetEntity"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
     "Text": "#define Player_IsFriendlySide_Offset \"0x{0:X}\"",
     "Name": "Player$$IsFriendlySide"
   },
