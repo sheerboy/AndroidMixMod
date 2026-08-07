@@ -32,7 +32,6 @@
 #define SAVE_SETTINGS 28
 #define AUTO_SIZE 29
 #define CLOSE_SETTINGS 30
-#define NATIVE_LOGS 32
 
 #include <unordered_map>
 
@@ -69,7 +68,6 @@ locale_map enUS = localization["enUS"] = std::unordered_map<int, const char*>{
     { BOARD_ZOOM_VALUE, "13_SeekBar_Camera field of view_60_120" },
     { TURN_TIMER, "14_Toggle_Show turn countdown on end turn button" },
     { LEADERBOARD_INFO, "15_Toggle_Show MMR and last board on Battlegrounds leaderboard" },
-    { NATIVE_LOGS, "32_Toggle_Enable native Power.log/Decks.log for deck trackers" },
     { SAVE_SETTINGS, "-1_Toggle_Save feature preferences"},
     { AUTO_SIZE, "-3_Toggle_Auto size vertically"},
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>Close settings</font>"}

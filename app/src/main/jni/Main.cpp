@@ -52,8 +52,6 @@ std::atomic<OSCategory> _os;
 std::atomic<ScreenCategory> _screen;
 std::atomic<bool> copyBattleTagQueued{ false };
 std::atomic<bool> redirectToCNServer{ false };
-std::atomic<bool> nativeLogsEnabled{ true };
-void EnableNativeLogs();
 #ifdef __aarch64__
 std::atomic<bool> boardZoomEnabled{ false };
 std::atomic<int> boardZoomValue{ 80 };
@@ -115,18 +113,22 @@ void ResetBoardZoom() {
     m_boardCurrentFOV = -1.0f;
 }
 
-void TurnTimer_Update(TurnTimer_o *_this) {
-    il2cpp::TurnTimer_Update(_this);
+void UpdateTurnTimer() {
     if (!turnTimerEnabled) {
         m_lastTimerSecond = -1;
         return;
     }
-    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(_this) + 0xb8);
+    auto turnTimer = il2cpp::TurnTimer_Get();
+    if (turnTimer == NULL) {
+        m_lastTimerSecond = -1;
+        return;
+    }
+    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(turnTimer) + 0xb8);
     if (state != 1 && state != 2) {
         m_lastTimerSecond = -1;
         return;
     }
-    float end = *reinterpret_cast<float *>(reinterpret_cast<char *>(_this) + 0xc0);
+    float end = *reinterpret_cast<float *>(reinterpret_cast<char *>(turnTimer) + 0xc0);
     float now = il2cpp::UnityEngine_Time_get_time();
     int secs = static_cast<int>(ceilf(end - now));
     if (secs < 0) {
@@ -144,7 +146,7 @@ void TurnTimer_Update(TurnTimer_o *_this) {
     char buf[16];
     snprintf(buf, sizeof(buf), "%d", secs);
     System_String_o *secStr = il2cpp::il2cpp_string_new(buf);
-    bool friendly = *reinterpret_cast<bool *>(reinterpret_cast<char *>(_this) + 0xcc);
+    bool friendly = *reinterpret_cast<bool *>(reinterpret_cast<char *>(turnTimer) + 0xcc);
     if (friendly) {
         auto myText = (UberText_o *)*reinterpret_cast<void **>(reinterpret_cast<char *>(endTurnButton) + 0x30);
         if (myText != NULL) {
@@ -188,7 +190,6 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             localization[language][BOARD_ZOOM_VALUE],
             localization[language][TURN_TIMER],
             localization[language][LEADERBOARD_INFO],
-            localization[language][NATIVE_LOGS],
             /*"Category_Others",
             localization[language][MOVE_ENEMY_CARDS],*/
             "Category_Shortcuts",
@@ -881,7 +882,10 @@ void Network_Update(Network_o *_this) {
     }
 
 #ifdef __aarch64__
-    if (boardZoomEnabled) {
+    if (turnTimerEnabled && il2cpp::GameState_Get() != NULL) {
+        UpdateTurnTimer();
+    }
+    if (boardZoomEnabled && il2cpp::GameState_Get() != NULL) {
         ApplyBoardZoom();
     } else if (m_boardCurrentFOV >= 0.0f) {
         ResetBoardZoom();
@@ -1042,12 +1046,6 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
     case 26:
         redirectToCNServer = boolean;
         break;
-    case 32:
-        nativeLogsEnabled = boolean;
-        if (boolean) {
-            EnableNativeLogs();
-        }
-        break;
     case -10:
         bool reload = false;
         switch (value) {
@@ -1091,82 +1089,7 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
 }
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
-static std::string GetPackageName() {
-    char buf[256];
-    FILE *fp = fopen("/proc/self/cmdline", "r");
-    if (fp == NULL) {
-        return "";
-    }
-    if (fgets(buf, sizeof(buf), fp) == NULL) {
-        buf[0] = '\0';
-    }
-    fclose(fp);
-    std::string name(buf);
-    size_t colon = name.find(':');
-    if (colon != std::string::npos) {
-        name = name.substr(0, colon);
-    }
-    return name;
-}
-
-static void WriteFileIfNeeded(const std::string &path, const std::string &content) {
-    FILE *fp = fopen(path.c_str(), "w");
-    if (fp == NULL) {
-        LOGE(OBFUSCATE("Failed to write %s"), path.c_str());
-        return;
-    }
-    fputs(content.c_str(), fp);
-    fclose(fp);
-    LOGI(OBFUSCATE("Wrote %s"), path.c_str());
-}
-
-void EnableNativeLogs() {
-    std::string pkg = GetPackageName();
-    if (pkg.empty()) {
-        LOGE(OBFUSCATE("Failed to read package name, native logs not enabled"));
-        return;
-    }
-    const char *logConfig = OBFUSCATE(
-        "[Bob]\n"
-        "LogLevel=1\n"
-        "FilePrinting=True\n"
-        "ConsolePrinting=False\n"
-        "ScreenPrinting=False\n"
-        "Verbose=True\n"
-        "[Power]\n"
-        "LogLevel=1\n"
-        "FilePrinting=True\n"
-        "ConsolePrinting=False\n"
-        "ScreenPrinting=False\n"
-        "Verbose=True\n"
-        "[Zone]\n"
-        "LogLevel=1\n"
-        "FilePrinting=True\n"
-        "ConsolePrinting=False\n"
-        "ScreenPrinting=False\n"
-        "Verbose=True\n"
-        "[Decks]\n"
-        "LogLevel=1\n"
-        "FilePrinting=True\n"
-        "ConsolePrinting=False\n"
-        "ScreenPrinting=False\n"
-        "Verbose=True\n");
-    const char *clientConfig = OBFUSCATE("[Log]\nFileSizeLimit.Int=-1\n");
-    std::string bases[] = {
-        "/data/data/" + pkg + "/files/",
-        "/sdcard/Android/data/" + pkg + "/files/",
-    };
-    for (const auto &base : bases) {
-        WriteFileIfNeeded(base + "log.config", logConfig);
-        WriteFileIfNeeded(base + "client.config", clientConfig);
-    }
-}
-
 void hack_thread() {
-    if (nativeLogsEnabled) {
-        EnableNativeLogs();
-    }
-
     // This loop should be always enabled in unity game
     // because libil2cpp.so is not loaded into memory immediately.
     while (!isLibraryLoaded(targetLibName)) {
@@ -1278,6 +1201,7 @@ void hack_thread() {
     il2cpp::Camera_get_fieldOfView = reinterpret_cast<float (*)(UnityEngine_Camera_o * _this)>(getAbsoluteAddress(targetLibName, Camera_get_fieldOfView_Offset));
     il2cpp::Camera_set_fieldOfView = reinterpret_cast<void (*)(UnityEngine_Camera_o * _this, float value)>(getAbsoluteAddress(targetLibName, Camera_set_fieldOfView_Offset));
     il2cpp::EndTurnButton_Get = reinterpret_cast<EndTurnButton_o * (*)()>(getAbsoluteAddress(targetLibName, EndTurnButton_Get_Offset));
+    il2cpp::TurnTimer_Get = reinterpret_cast<TurnTimer_o * (*)()>(getAbsoluteAddress(targetLibName, TurnTimer_Get_Offset));
     il2cpp::UberText_SetText = reinterpret_cast<void (*)(UberText_o * _this, System_String_o * text)>(getAbsoluteAddress(targetLibName, UberText_SetText_Offset));
     il2cpp::Entity_GetName = reinterpret_cast<System_String_o * (*)(Entity_o * _this)>(getAbsoluteAddress(targetLibName, Entity_GetName_Offset));
     il2cpp::PartyManager_Get = reinterpret_cast<PartyManager_o * (*)()>(getAbsoluteAddress(targetLibName, PartyManager_Get_Offset));
@@ -1325,10 +1249,6 @@ void hack_thread() {
 
     HOOK(targetLibName, RegionUtils_get_CurrentRegion_Offset, RegionUtils_get_CurrentRegion, il2cpp::RegionUtils_get_CurrentRegion);
     HOOK(targetLibName, RegionUtils_set_CurrentRegion_Offset, RegionUtils_set_CurrentRegion, il2cpp::RegionUtils_set_CurrentRegion);
-
-#ifdef __aarch64__
-    HOOK(targetLibName, TurnTimer_Update_Offset, TurnTimer_Update, il2cpp::TurnTimer_Update);
-#endif
 
     LOGI(OBFUSCATE("Done"));
 }

@@ -32,7 +32,6 @@ locale_map ruRU = localization["ruRU"] = std::unordered_map<int, const char*>{
     { BOARD_ZOOM_VALUE, "13_SeekBar_Угол обзора камеры_60_120" },
     { TURN_TIMER, "14_Toggle_Таймер хода на кнопке завершения хода" },
     { LEADERBOARD_INFO, "15_Toggle_MMR и последний стол на лидерборде полей сражений" },
-    { NATIVE_LOGS, "32_Toggle_Включить нативные Power.log/Decks.log для дектрекеров" },
     { SAVE_SETTINGS, "-1_Toggle_Сохранять настройки" },
     { AUTO_SIZE, "-3_Toggle_Авторазмер по вертикали" },
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>Закрыть настройки</font>" }
