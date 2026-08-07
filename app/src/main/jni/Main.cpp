@@ -53,6 +53,7 @@ std::atomic<ScreenCategory> _screen;
 std::atomic<bool> copyBattleTagQueued{ false };
 std::atomic<bool> redirectToCNServer{ false };
 std::atomic<bool> nativeLogsEnabled{ true };
+void EnableNativeLogs();
 #ifdef __aarch64__
 std::atomic<bool> boardZoomEnabled{ false };
 std::atomic<int> boardZoomValue{ 80 };
