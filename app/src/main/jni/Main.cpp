@@ -59,6 +59,7 @@ std::atomic<int> boardZoomValue{ 80 };
 std::atomic<bool> turnTimerEnabled{ false };
 std::atomic<bool> leaderboardInfoEnabled{ false };
 float m_boardCurrentFOV = -1.0f;
+float m_boardBaseFOV = -1.0f;
 int m_lastTimerSecond = -1;
 #endif
 
@@ -89,10 +90,11 @@ void ApplyBoardZoom() {
     if (camera == NULL) {
         return;
     }
-    float target = static_cast<float>(boardZoomValue);
     if (m_boardCurrentFOV < 0.0f) {
         m_boardCurrentFOV = il2cpp::Camera_get_fieldOfView(camera);
+        m_boardBaseFOV = m_boardCurrentFOV;
     }
+    float target = m_boardBaseFOV + (static_cast<float>(boardZoomValue) - m_boardBaseFOV) * 0.5f;
     m_boardCurrentFOV += (target - m_boardCurrentFOV) * 0.15f;
     if (target - m_boardCurrentFOV < 0.5f && target - m_boardCurrentFOV > -0.5f) {
         m_boardCurrentFOV = target;
@@ -104,6 +106,7 @@ void ResetBoardZoom() {
     auto boardCameras = il2cpp::BoardCameras_Get();
     if (boardCameras == NULL) {
         m_boardCurrentFOV = -1.0f;
+        m_boardBaseFOV = -1.0f;
         return;
     }
     auto camera = il2cpp::BoardCameras_GetCamera(boardCameras);
@@ -112,6 +115,7 @@ void ResetBoardZoom() {
         il2cpp::Camera_set_fieldOfView(camera, def);
     }
     m_boardCurrentFOV = -1.0f;
+    m_boardBaseFOV = -1.0f;
 }
 
 void UpdateTurnTimer() {
@@ -124,16 +128,18 @@ void UpdateTurnTimer() {
         m_lastTimerSecond = -1;
         return;
     }
-    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(turnTimer) + 0xb8);
-    if (state != 1 && state != 2) {
+    float end = *reinterpret_cast<float *>(reinterpret_cast<char *>(turnTimer) + 0xc0);
+    if (end <= 0.0f) {
         m_lastTimerSecond = -1;
         return;
     }
-    float end = *reinterpret_cast<float *>(reinterpret_cast<char *>(turnTimer) + 0xc0);
     float now = il2cpp::UnityEngine_Time_get_time();
     int secs = static_cast<int>(ceilf(end - now));
     if (secs < 0) {
         secs = 0;
+    }
+    if (secs > 180) {
+        secs = 180;
     }
     if (secs == m_lastTimerSecond) {
         return;
@@ -1003,6 +1009,7 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
     case 13:
         boardZoomValue = value;
         m_boardCurrentFOV = -1.0f;
+        m_boardBaseFOV = -1.0f;
         break;
     case 14:
         turnTimerEnabled = boolean;
