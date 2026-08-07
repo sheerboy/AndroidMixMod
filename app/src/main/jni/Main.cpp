@@ -61,6 +61,7 @@ std::atomic<bool> leaderboardInfoEnabled{ false };
 float m_boardCurrentFOV = -1.0f;
 float m_boardBaseFOV = -1.0f;
 int m_lastTimerSecond = -1;
+float m_lastHoverInfoTime = 0.0f;
 #endif
 
 
@@ -599,11 +600,13 @@ void PlayerLeaderboardManager_SetCurrentOpponent(PlayerLeaderboardManager_o *_th
 }
 
 void PlayerLeaderboardCard_NotifyMousedOver(PlayerLeaderboardCard_o *_this) {
-    auto m_mousedOver = _this->fields.m_mousedOver;
     il2cpp::PlayerLeaderboardCard_NotifyMousedOver(_this);
-    if (m_mousedOver) {
+
+    float now = il2cpp::UnityEngine_Time_get_time();
+    if (now - m_lastHoverInfoTime < 0.35f) {
         return;
     }
+    m_lastHoverInfoTime = now;
 
     if (copySelectedBattleTag) {
         auto currentOpponent = GetSelectedOpponent(_this);
