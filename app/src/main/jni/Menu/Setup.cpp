@@ -1,9 +1,17 @@
 #include "Includes/obfuscate.h"
+#include "Includes/Logger.h"
 #include "Menu/Menu.hpp"
 #include "Utils.hpp"
 
 JavaVM *g_vm;
 jclass g_mainClazz;
+
+static void RegisterMethod(JNIEnv *env, jclass clazz, JNINativeMethod method) {
+    if (env->RegisterNatives(clazz, &method, 1) != 0) {
+        LOGE(OBFUSCATE("Failed to register native method %s%s"), method.name, method.signature);
+        env->ExceptionClear();
+    }
+}
 
 int RegisterMenu(JNIEnv *env) {
     JNINativeMethod methods[] = {
@@ -24,10 +32,13 @@ int RegisterMenu(JNIEnv *env) {
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Menu"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
+    if (!clazz) {
+        LOGE(OBFUSCATE("FindClass failed: com/android/support/Menu"));
+        env->ExceptionClear();
+        return JNI_OK;
+    }
+    for (JNINativeMethod method : methods)
+        RegisterMethod(env, clazz, method);
     return JNI_OK;
 }
 
@@ -36,10 +47,13 @@ int RegisterPreferences(JNIEnv *env) {
             {OBFUSCATE("Changes"), OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IJZLjava/lang/String;)V"), reinterpret_cast<void *>(Changes)},
     };
     jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Preferences"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
+    if (!clazz) {
+        LOGE(OBFUSCATE("FindClass failed: com/android/support/Preferences"));
+        env->ExceptionClear();
+        return JNI_OK;
+    }
+    for (JNINativeMethod method : methods)
+        RegisterMethod(env, clazz, method);
     return JNI_OK;
 }
 
@@ -49,11 +63,13 @@ int RegisterMain(JNIEnv *env) {
              reinterpret_cast<void *>(CheckOverlayPermission)},
     };
     jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Main"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
-
+    if (!clazz) {
+        LOGE(OBFUSCATE("FindClass failed: com/android/support/Main"));
+        env->ExceptionClear();
+        return JNI_OK;
+    }
+    for (JNINativeMethod method : methods)
+        RegisterMethod(env, clazz, method);
     return JNI_OK;
 }
 
@@ -62,18 +78,20 @@ JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM *vm, void *reserved) {
     g_vm = vm;
     JNIEnv *env;
-    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
+        LOGE(OBFUSCATE("JNI_OnLoad: GetEnv failed"));
+        return JNI_ERR;
+    }
     
     jclass localClassRef = env->FindClass("com/android/support/Main");
     if (localClassRef != NULL) {
         g_mainClazz = (jclass)env->NewGlobalRef(localClassRef);
+    } else {
+        env->ExceptionClear();
     }
     
-    if (RegisterMenu(env) != 0)
-        return JNI_ERR;
-    if (RegisterPreferences(env) != 0)
-        return JNI_ERR;
-    if (RegisterMain(env) != 0)
-        return JNI_ERR;
+    RegisterMenu(env);
+    RegisterPreferences(env);
+    RegisterMain(env);
     return JNI_VERSION_1_6;
 }
