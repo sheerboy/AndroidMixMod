@@ -53,6 +53,7 @@ std::atomic<OSCategory> _os;
 std::atomic<ScreenCategory> _screen;
 std::atomic<bool> copyBattleTagQueued{ false };
 std::atomic<bool> redirectToCNServer{ false };
+float m_lastHoverInfoTime = 0.0f;
 #ifdef __aarch64__
 std::atomic<bool> boardZoomEnabled{ false };
 std::atomic<int> boardZoomValue{ 80 };
@@ -61,7 +62,6 @@ std::atomic<bool> leaderboardInfoEnabled{ false };
 float m_boardCurrentFOV = -1.0f;
 float m_boardBaseFOV = -1.0f;
 int m_lastTimerSecond = -1;
-float m_lastHoverInfoTime = 0.0f;
 #endif
 
 
