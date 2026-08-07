@@ -171,7 +171,11 @@ namespace il2cpp {
 
     Player_o *(*GameState_GetPlayer)(GameState_o *_this, int id);
 
+    Player_o *(*GameState_GetFriendlySidePlayer)(GameState_o *_this);
+
     ZonePlay_o *(*Player_GetBattlefieldZone)(Player_o *_this);
+
+    Zone_o *(*Player_GetDeckZone)(Player_o *_this);
 
     System_Collections_Generic_List_Card__o *(*Zone_GetCards)(Zone_o *_this);
 

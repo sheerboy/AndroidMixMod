@@ -1,5 +1,6 @@
 #include <list>
 #include <vector>
+#include <map>
 #include <pthread.h>
 #include <thread>
 #include <cstring>
@@ -190,6 +191,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             localization[language][BOARD_ZOOM_VALUE],
             localization[language][TURN_TIMER],
             localization[language][LEADERBOARD_INFO],
+            localization[language][DECK_TRACKER],
             /*"Category_Others",
             localization[language][MOVE_ENEMY_CARDS],*/
             "Category_Shortcuts",
@@ -1088,6 +1090,62 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
     }
 }
 
+jstring GetDeckInfo(JNIEnv *env, jobject thiz) {
+    if (!isLibraryLoaded(targetLibName)) {
+        return env->NewStringUTF("");
+    }
+    if (il2cpp::GameState_Get == NULL || il2cpp::GameState_GetFriendlySidePlayer == NULL ||
+        il2cpp::Player_GetDeckZone == NULL || il2cpp::Zone_GetCards == NULL ||
+        il2cpp::Card_GetEntity == NULL || il2cpp::Entity_GetName == NULL) {
+        return env->NewStringUTF("");
+    }
+    std::string result;
+    auto gameState = il2cpp::GameState_Get();
+    if (gameState != NULL) {
+        auto player = il2cpp::GameState_GetFriendlySidePlayer(gameState);
+        if (player != NULL) {
+            auto zone = il2cpp::Player_GetDeckZone(player);
+            if (zone != NULL) {
+                auto cards = il2cpp::Zone_GetCards(zone);
+                if (cards != NULL) {
+                    int count = *reinterpret_cast<int *>(reinterpret_cast<char *>(cards) + 0x18);
+                    if (count > 0) {
+                        auto items = *reinterpret_cast<void **>(reinterpret_cast<char *>(cards) + 0x10);
+                        if (items != NULL) {
+                            std::map<std::string, int> deck;
+                            for (int i = 0; i < count; i++) {
+                                auto card = *reinterpret_cast<void **>(reinterpret_cast<char *>(items) + 0x20 + i * sizeof(void *));
+                                if (card == NULL) {
+                                    continue;
+                                }
+                                auto entity = il2cpp::Card_GetEntity(reinterpret_cast<Card_o *>(card));
+                                if (entity == NULL) {
+                                    continue;
+                                }
+                                System_String_o *nameStr = il2cpp::Entity_GetName(reinterpret_cast<Entity_o *>(entity));
+                                if (nameStr == NULL) {
+                                    continue;
+                                }
+                                std::string name = SS_to_str(nameStr);
+                                if (name.empty()) {
+                                    continue;
+                                }
+                                deck[name]++;
+                            }
+                            for (const auto &kv : deck) {
+                                char cnt[16];
+                                snprintf(cnt, sizeof(cnt), " x%d\n", kv.second);
+                                result += kv.first + cnt;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return env->NewStringUTF(result.c_str());
+}
+
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
 void hack_thread() {
     // This loop should be always enabled in unity game
@@ -1162,7 +1220,9 @@ void hack_thread() {
     il2cpp::EntityBase_HasTag = reinterpret_cast<bool (*)(EntityBase_o * _this, int tag)>(getAbsoluteAddress(targetLibName, EntityBase_HasTag_Offset));
     il2cpp::EntityBase_GetControllerId = reinterpret_cast<int (*)(EntityBase_o * _this)>(getAbsoluteAddress(targetLibName, EntityBase_GetControllerId_Offset));
     il2cpp::GameState_GetPlayer = reinterpret_cast<Player_o * (*)(GameState_o *_this, int id)>(getAbsoluteAddress(targetLibName, GameState_GetPlayer_Offset));
+    il2cpp::GameState_GetFriendlySidePlayer = reinterpret_cast<Player_o * (*)(GameState_o *_this)>(getAbsoluteAddress(targetLibName, GameState_GetFriendlySidePlayer_Offset));
     il2cpp::Player_GetBattlefieldZone = reinterpret_cast<ZonePlay_o * (*)(Player_o *_this)>(getAbsoluteAddress(targetLibName, Player_GetBattlefieldZone_Offset));
+    il2cpp::Player_GetDeckZone = reinterpret_cast<Zone_o * (*)(Player_o *_this)>(getAbsoluteAddress(targetLibName, Player_GetDeckZone_Offset));
     il2cpp::Zone_GetCards = reinterpret_cast<System_Collections_Generic_List_Card__o * (*)(Zone_o *_this)>(getAbsoluteAddress(targetLibName, Zone_GetCards_Offset));
     il2cpp::Card_GetEntity = reinterpret_cast<Entity_o * (*)(Card_o *_this)>(getAbsoluteAddress(targetLibName, Card_GetEntity_Offset));
     il2cpp::Player_IsFriendlySide = reinterpret_cast<bool (*)(Player_o *_this)>(getAbsoluteAddress(targetLibName, Player_IsFriendlySide_Offset));

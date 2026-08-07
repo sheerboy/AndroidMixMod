@@ -100,6 +100,10 @@ public class Menu {
     LinearLayout.LayoutParams scrlLLExpanded, scrlLL;
     WindowManager mWindowManager;
     WindowManager.LayoutParams vmParams;
+    TextView deckView;
+    WindowManager.LayoutParams deckParams;
+    Runnable deckPoller;
+    boolean deckTrackerOn;
     ImageView startimage;
     FrameLayout rootFrame;
     ScrollView scrollView;
@@ -114,6 +118,8 @@ public class Menu {
     native String IconWebViewData();
 
     native String[] GetFeatureList();
+
+    native String GetDeckInfo();
 
     native String[] SettingsList();
 
@@ -366,6 +372,10 @@ public class Menu {
         mWindowManager = (WindowManager) getContext.getSystemService(Context.WINDOW_SERVICE);
         mWindowManager.addView(rootFrame, vmParams);
 
+        if (deckTrackerOn) {
+            showDeckPanel();
+        }
+
         overlayRequired = true;
     }
 
@@ -389,6 +399,10 @@ public class Menu {
 
         mWindowManager = ((Activity) getContext).getWindowManager();
         mWindowManager.addView(rootFrame, vmParams);
+
+        if (deckTrackerOn) {
+            showDeckPanel();
+        }
     }
 
     private View.OnTouchListener onTouchListener() {
@@ -570,6 +584,13 @@ public class Menu {
                     case -3:
                         Preferences.isExpanded = bool;
                         scrollView.setLayoutParams(bool ? scrlLLExpanded : scrlLL);
+                        break;
+                    case 33:
+                        if (bool) {
+                            showDeckPanel();
+                        } else {
+                            hideDeckPanel();
+                        }
                         break;
                 }
             }
@@ -1164,6 +1185,75 @@ public class Menu {
     public void onDestroy() {
         if (rootFrame != null) {
             mWindowManager.removeView(rootFrame);
+        }
+    }
+
+    //********** Deck tracker panel **********//
+    private void showDeckPanel() {
+        if (mWindowManager == null) {
+            deckTrackerOn = true;
+            return;
+        }
+        if (deckView == null) {
+            deckView = new TextView(getContext);
+            deckView.setBackgroundColor(Color.parseColor("#B0000000"));
+            deckView.setTextColor(Color.WHITE);
+            deckView.setTextSize(14.0f);
+            deckView.setTypeface(Typeface.MONOSPACE);
+            deckView.setPadding(dp(8), dp(6), dp(8), dp(6));
+            deckView.setText("—");
+            int iparams = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? 2038 : 2002;
+            deckParams = new WindowManager.LayoutParams(
+                    WRAP_CONTENT,
+                    WRAP_CONTENT,
+                    iparams,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+            deckParams.gravity = Gravity.TOP | Gravity.END;
+            deckParams.x = 0;
+            deckParams.y = dp(120);
+        }
+        try {
+            if (!deckView.isAttachedToWindow()) {
+                mWindowManager.addView(deckView, deckParams);
+            }
+        } catch (Exception ignored) {
+        }
+        deckTrackerOn = true;
+        if (deckPoller == null) {
+            deckPoller = new Runnable() {
+                public void run() {
+                    if (!deckTrackerOn) {
+                        return;
+                    }
+                    try {
+                        String info = GetDeckInfo();
+                        if (info != null && !info.isEmpty()) {
+                            deckView.setText(info);
+                        }
+                    } catch (Throwable t) {
+                        Log.e(TAG, "GetDeckInfo", t);
+                    }
+                    mainHandler.postDelayed(deckPoller, 1000);
+                }
+            };
+        }
+        mainHandler.removeCallbacks(deckPoller);
+        mainHandler.post(deckPoller);
+    }
+
+    private void hideDeckPanel() {
+        deckTrackerOn = false;
+        if (deckPoller != null) {
+            mainHandler.removeCallbacks(deckPoller);
+        }
+        if (deckView != null) {
+            try {
+                if (deckView.isAttachedToWindow()) {
+                    mWindowManager.removeView(deckView);
+                }
+            } catch (Exception ignored) {
+            }
         }
     }
 }

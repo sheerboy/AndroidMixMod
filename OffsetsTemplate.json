@@ -122,6 +122,18 @@
   {
     "$type": "Generator.OffsetLines.TextLine, Generator",
     "Section": 0,
+    "Text": "#define GameState_GetFriendlySidePlayer_Offset \"0x{0:X}\"",
+    "Name": "GameState$$GetFriendlySidePlayer"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
+    "Text": "#define Player_GetDeckZone_Offset \"0x{0:X}\"",
+    "Name": "Player$$GetDeckZone"
+  },
+  {
+    "$type": "Generator.OffsetLines.TextLine, Generator",
+    "Section": 0,
     "Text": "#define Player_IsFriendlySide_Offset \"0x{0:X}\"",
     "Name": "Player$$IsFriendlySide"
   },

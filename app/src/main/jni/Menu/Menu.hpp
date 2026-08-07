@@ -15,6 +15,8 @@ jobjectArray SettingsList(JNIEnv *env, jobject activityObject);
 
 jobjectArray GetFeatureList(JNIEnv *env, jobject context);
 
+jstring GetDeckInfo(JNIEnv *env, jobject thiz);
+
 void Changes(JNIEnv *env, jclass clazz, jobject obj,
              jint featNum, jstring featName, jint value, jlong Lvalue,
              jboolean boolean, jstring str);
