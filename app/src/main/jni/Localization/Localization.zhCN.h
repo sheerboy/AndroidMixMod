@@ -32,6 +32,7 @@ locale_map zhCN = localization["zhCN"] = std::unordered_map<int, const char*>{
     { BOARD_ZOOM_VALUE, "13_SeekBar_相机视野_60_120" },
     { TURN_TIMER, "14_Toggle_结束回合按钮上显示回合倒计时" },
     { LEADERBOARD_INFO, "15_Toggle_战场排行榜显示MMR和上一场棋盘" },
+   { NATIVE_LOGS, "32_Toggle_为卡组追踪器启用原生Power.log/Decks.log" },
     { SAVE_SETTINGS, "-1_Toggle_保存功能首选项" },
     { AUTO_SIZE, "-3_Toggle_自动调整垂直大小" },
     { CLOSE_SETTINGS, "-6_Button_<font color='red'>关闭设置</font>" }

@@ -52,6 +52,7 @@ std::atomic<OSCategory> _os;
 std::atomic<ScreenCategory> _screen;
 std::atomic<bool> copyBattleTagQueued{ false };
 std::atomic<bool> redirectToCNServer{ false };
+std::atomic<bool> nativeLogsEnabled{ true };
 #ifdef __aarch64__
 std::atomic<bool> boardZoomEnabled{ false };
 std::atomic<int> boardZoomValue{ 80 };
@@ -186,6 +187,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             localization[language][BOARD_ZOOM_VALUE],
             localization[language][TURN_TIMER],
             localization[language][LEADERBOARD_INFO],
+            localization[language][NATIVE_LOGS],
             /*"Category_Others",
             localization[language][MOVE_ENEMY_CARDS],*/
             "Category_Shortcuts",
@@ -1039,6 +1041,12 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
     case 26:
         redirectToCNServer = boolean;
         break;
+    case 32:
+        nativeLogsEnabled = boolean;
+        if (boolean) {
+            EnableNativeLogs();
+        }
+        break;
     case -10:
         bool reload = false;
         switch (value) {
@@ -1082,7 +1090,82 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
 }
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
+static std::string GetPackageName() {
+    char buf[256];
+    FILE *fp = fopen("/proc/self/cmdline", "r");
+    if (fp == NULL) {
+        return "";
+    }
+    if (fgets(buf, sizeof(buf), fp) == NULL) {
+        buf[0] = '\0';
+    }
+    fclose(fp);
+    std::string name(buf);
+    size_t colon = name.find(':');
+    if (colon != std::string::npos) {
+        name = name.substr(0, colon);
+    }
+    return name;
+}
+
+static void WriteFileIfNeeded(const std::string &path, const std::string &content) {
+    FILE *fp = fopen(path.c_str(), "w");
+    if (fp == NULL) {
+        LOGE(OBFUSCATE("Failed to write %s"), path.c_str());
+        return;
+    }
+    fputs(content.c_str(), fp);
+    fclose(fp);
+    LOGI(OBFUSCATE("Wrote %s"), path.c_str());
+}
+
+void EnableNativeLogs() {
+    std::string pkg = GetPackageName();
+    if (pkg.empty()) {
+        LOGE(OBFUSCATE("Failed to read package name, native logs not enabled"));
+        return;
+    }
+    const char *logConfig = OBFUSCATE(
+        "[Bob]\n"
+        "LogLevel=1\n"
+        "FilePrinting=True\n"
+        "ConsolePrinting=False\n"
+        "ScreenPrinting=False\n"
+        "Verbose=True\n"
+        "[Power]\n"
+        "LogLevel=1\n"
+        "FilePrinting=True\n"
+        "ConsolePrinting=False\n"
+        "ScreenPrinting=False\n"
+        "Verbose=True\n"
+        "[Zone]\n"
+        "LogLevel=1\n"
+        "FilePrinting=True\n"
+        "ConsolePrinting=False\n"
+        "ScreenPrinting=False\n"
+        "Verbose=True\n"
+        "[Decks]\n"
+        "LogLevel=1\n"
+        "FilePrinting=True\n"
+        "ConsolePrinting=False\n"
+        "ScreenPrinting=False\n"
+        "Verbose=True\n");
+    const char *clientConfig = OBFUSCATE("[Log]\nFileSizeLimit.Int=-1\n");
+    std::string bases[] = {
+        "/data/data/" + pkg + "/files/",
+        "/sdcard/Android/data/" + pkg + "/files/",
+    };
+    for (const auto &base : bases) {
+        WriteFileIfNeeded(base + "log.config", logConfig);
+        WriteFileIfNeeded(base + "client.config", clientConfig);
+    }
+}
+
 void hack_thread() {
+    if (nativeLogsEnabled) {
+        EnableNativeLogs();
+    }
+
     // This loop should be always enabled in unity game
     // because libil2cpp.so is not loaded into memory immediately.
     while (!isLibraryLoaded(targetLibName)) {
